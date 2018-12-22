@@ -1,0 +1,4 @@
+#Tue Dec 11 18:34:54 VLAT 2018
+base.0=C\:\\PROJECTS ANDROID\\GPSTracking\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\10
+path.0=classes.dex
+renamed.0=classes.dex
