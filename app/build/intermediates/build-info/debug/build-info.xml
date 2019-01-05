@@ -6,19 +6,19 @@
     density="xxhdpi"
     format="10"
     plugin-version="3.2.0"
-    timestamp="1544541498292"
+    timestamp="1546675534140"
     token="-58018832160198957"
     verifier="FULL_BUILD_REQUESTED" >
 
     <task
         name="javac"
-        duration="178" />
+        duration="221" />
     <task
         name="instant-run-dex"
         duration="0" />
     <task
         name="instant-run-transform"
-        duration="24" />
+        duration="39" />
     <task
         name="verifier"
         duration="7" />
@@ -45,10 +45,10 @@
         location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_5.apk"
         type="SPLIT" />
     <artifact
-        location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
+        location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
         type="SPLIT" />
     <artifact
-        location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
+        location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
         type="SPLIT" />
     <artifact
         location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\resources\instant-run\debug\resources-debug.apk"
@@ -65,7 +65,7 @@
 
     <build
         build-mode="FULL"
-        timestamp="1544541498292"
+        timestamp="1546675534140"
         verifier="FULL_BUILD_REQUESTED" >
         <artifact
             location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_0.apk"
@@ -89,10 +89,10 @@
             location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_5.apk"
             type="SPLIT" />
         <artifact
-            location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
+            location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
             type="SPLIT" />
         <artifact
-            location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
+            location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
             type="SPLIT" />
         <artifact
             location="C:\PROJECTS ANDROID\GPSTracking\app\build\intermediates\resources\instant-run\debug\resources-debug.apk"

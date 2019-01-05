@@ -11,17 +11,27 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.security.Permission;
+
+import static java.lang.StrictMath.abs;
 
 public class MapsActivity extends FragmentActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
@@ -38,6 +48,16 @@ public class MapsActivity extends FragmentActivity implements
     private boolean mPermissionDenied = false;
     private boolean mLocationPermissionsGranted = false;
 
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationCallback locationCallback;
+    private LocationRequest locationRequest;
+
+
+    private boolean locationIsActive = false;
+    double CLat=0,CLng=0;
+    int Point=1;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,20 +68,93 @@ public class MapsActivity extends FragmentActivity implements
         mapFragment.getMapAsync(this);
         getLocationPermission();
 
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        if (ContextCompat.checkSelfPermission(
+                this.getApplicationContext(),
+                FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED) {
+            locationRequest = LocationRequest.create();
+            locationRequest.setInterval(10000);
+            locationRequest.setFastestInterval(5000);
+
+
+
+
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    super.onLocationResult(locationResult);
+
+                    Location lastLocation = locationResult.getLastLocation();
+
+
+                    if (lastLocation != null) {
+                        double lat = lastLocation.getLatitude();
+                        double lng = lastLocation.getLongitude();
+
+                        Log.d("TAG", "Lat: " + abs(CLat-lat) + ", Long: " + abs(CLng-lng));
+                        Log.d("TAG", "Lat: " + lat + ", Long: " + lng);
+
+                        if (mMap != null&&(
+                        abs(CLat-lat)>0.0005||
+                        abs(CLng-lng)>0.0005))
+                        {
+                                Log.d("TAG", "Маркер добавлен");
+                                // Logic to handle location object
+                                LatLng sydney = new LatLng(lat, lng);
+
+                                mMap.addMarker(new MarkerOptions().position(sydney)
+                                        .title("Lat: " + lat + ", Long: " + lng+
+                                                " Point:"+Point));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                                Point++;
+                                CLat=lat;
+                                CLng=lng;
+                        }
+
+                    }
+                }
+
+                @Override
+                public void onLocationAvailability(LocationAvailability locationAvailability) {
+                    super.onLocationAvailability(locationAvailability);
+                }
+            };
+        }
 
         FloatingActionButton Floc = findViewById(R.id.Floc);
         Floc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (locationIsActive == false && mFusedLocationClient != null) {
+                    mFusedLocationClient.requestLocationUpdates(
+                            locationRequest,
+                            locationCallback,
+                            null
 
-
-                Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                onMapReady(mMap);
+                    );
+                    Snackbar.make(view, "Tracking active", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    locationIsActive = true;
+                } else if (locationIsActive == true) {
+                    mFusedLocationClient.removeLocationUpdates(locationCallback);
+                    locationIsActive = false;
+                    Snackbar.make(view, "Tracking INACTIVE", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
             }
         });
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (mFusedLocationClient != null) {
+            mFusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+    }
 
     /**
      * Manipulates the map once available.
@@ -74,10 +167,18 @@ public class MapsActivity extends FragmentActivity implements
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d("TAG", "onMapReady");
+
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -87,10 +188,12 @@ public class MapsActivity extends FragmentActivity implements
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+
         mMap.setMyLocationEnabled(true);
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
     }
+
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
@@ -101,36 +204,50 @@ public class MapsActivity extends FragmentActivity implements
     public boolean onMyLocationButtonClick() {
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
-        // (the camera animates to the user's current position).
+        // (the camera animates to the user's current position)/home/sergey.
         return false;
     }
 
-    private void getLocationPermission(){
+    private void getLocationPermission() {
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        boolean fineLocationIsGranted = ContextCompat.checkSelfPermission(
+                this.getApplicationContext(),
+                FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+
+
+        if (fineLocationIsGranted) {
+            boolean courseLocationIsGranted = ContextCompat.checkSelfPermission(
+                    this.getApplicationContext(),
+                    COURSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED;
+
+            if (courseLocationIsGranted) {
                 mLocationPermissionsGranted = true;
                 initMap();
-            }else{
-                ActivityCompat.requestPermissions(this,
+            } else {
+                ActivityCompat.requestPermissions(
+                        this,
                         permissions,
-                        LOCATION_PERMISSION_REQUEST_CODE);
+                        LOCATION_PERMISSION_REQUEST_CODE
+                );
             }
-        }else{
-            ActivityCompat.requestPermissions(this,
+        } else {
+            ActivityCompat.requestPermissions(
+                    this,
                     permissions,
-                    LOCATION_PERMISSION_REQUEST_CODE);
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
         }
     }
-    private void initMap(){
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
+    private void initMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment)
+                getSupportFragmentManager().findFragmentById(R.id.map);
 
     }
-
 
 
 }
